@@ -13,7 +13,8 @@ function log2(n) { return Math.ceil( Math.log(n) / Math.log(2) ) }
 // ============================================================================
 
 // initialize a network with an adjacency list describing the neighbor nodes 
-// that each node can "hear":
+// that each node can "hear". NOTE: paper seems to assume undirected graph,
+// not sure if same properties hold if we pass a directed graph here.
 function Network(adjList) { 
     var netwk = this;
 
@@ -35,10 +36,11 @@ function Network(adjList) {
     netwk.run = function(){
         for ( null; netwk.phase <= log2(netwk.D); netwk.phase++ ) {
             for ( null; netwk.step <= (M * log2(netwk.n)); netwk.step++ ) {
-                netwk.exch1();
-                netwk.exch2();
+                 netwk.exch1();
+              if(netwk.exch2()) return true;  // algorithm done, return early
             }
         }
+        return false; // algorithm failed to terminate
     }
 
     // The algorithm is almost completely described by the behavior of a Node
@@ -198,6 +200,8 @@ Network.prototype.exch1 = function(){
 Network.prototype.exch2 = function(){
     eve("signal_all.do.exch2");
     eve("signal_all.do.exch2_");
-}
 
-// TODO: consider netwk.runStep() for debugging
+    // if we don't have any more active nodes, then return false:
+    var active = eve.listeners("signal_all.do.*");
+    return (active.length === 0);
+}
