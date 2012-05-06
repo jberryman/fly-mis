@@ -33,8 +33,8 @@ function Network(adjList) {
     // (D), with the probability of a node entering the MIS increasing with
     // each phase (see Node definition above).
     netwk.run = function(){
-        for ( null; netwk.phase != log2(netwk.D); netwk.phase++ ) {
-            for ( null; netwk.step != (M * log2(netwk.n)); netwk.step++ ) {
+        for ( null; netwk.phase <= log2(netwk.D); netwk.phase++ ) {
+            for ( null; netwk.step <= (M * log2(netwk.n)); netwk.step++ ) {
                 netwk.exch1();
                 netwk.exch2();
             }
@@ -183,7 +183,9 @@ function Network(adjList) {
 }
 
 
-
+// TODO: DO PROGRAMMABLE PAUSES HERE AND ALSO FIRE EVENTS FOR THE VISUALIZATION
+// CODE TO KEEP TRACK OF PHASE / STEP AND EXCH1/2.
+//
 Network.prototype.exch1 = function(){
     eve("signal_all.do.exch1");
     // From my tests and understanding of the 'eve' library, these events are
