@@ -1,0 +1,22 @@
+body {
+    background: #BBBBBB;
+}
+
+#paper {
+    width: 500px;
+    height: 500px;
+    margin: 25px auto;
+    background: white;
+
+
+  /* copy-pasted from the wonderful http://css3please.com/ */
+  -webkit-border-radius: 10px; 
+     -moz-border-radius: 10px;
+          border-radius: 10px;
+
+  -moz-background-clip: padding; -webkit-background-clip: padding-box; background-clip: padding-box;
+
+  -webkit-box-shadow: 1px 2px 8px 1px #333333; 
+     -moz-box-shadow: 1px 2px 8px 1px #333333;
+          box-shadow: 1px 2px 8px 1px #333333;
+}
