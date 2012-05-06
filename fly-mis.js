@@ -157,22 +157,26 @@ function Network(adjList) {
         $.each(neighbors, function (i,nbr){
             eve.on( nbr+".broadcasts", hears );
         });
-        // stop listening to any broadcasts when this node exits (either in MIS
-        // or not):
-        eve.on( nd.id+".exits.*" , function(){ 
-            eve.off("*.broadcasts" , hears) 
-        });
-
+        
         // we'll also use events to signal that all nodes should perform an
         // exchange step. Eve is actually just a global queue so nothing is 
         // done asynchronously, but this would still work of events triggered
         // were non-deterministic:
-        eve.on( "signal_all.do.*" , function(){
+        function does(){ 
             // get exchange method name we globbed, and run it directly. (a bit
             // of a hack, sorry)
             var exch = eve.nt().split(".").pop();
             nd[exch]();
+        }
+        eve.on("signal_all.do.*" , does);
+        
+        // stop listening to any broadcasts from neighbors, and stop listening
+        // to signals, when this node exits (either in MIS or not):
+        eve.on( nd.id+".exits.*" , function(){ 
+            eve.off("*.broadcasts" , hears) 
+            eve.off("signal_all.do.*" , does); // NOTE: this lets us use eve.listeners() to see how many are active
         });
+
 
         return nd;
     });
