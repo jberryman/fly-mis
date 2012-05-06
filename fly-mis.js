@@ -12,7 +12,9 @@ function log2(n) { return Math.ceil( Math.log(n) / Math.log(2) ) }
 //  ALGORITHM / NETWORK DESCRIPTION
 // ============================================================================
 
-function Network() { 
+// initialize a network with an adjacency list describing the neighbor nodes 
+// that each node can "hear":
+function Network(adjList) { 
     var netwk = this;
 
     // The algorithm is parameterized by two properties of the network: the
@@ -32,7 +34,7 @@ function Network() {
     // each phase (see Node definition above).
     netwk.run = function(){
         for ( null; netwk.phase != log2(netwk.D); netwk.phase++ ) {
-            for ( null; j != (M * log2(netwk.n)); netwk.step++ ) {
+            for ( null; netwk.step != (M * log2(netwk.n)); netwk.step++ ) {
                 netwk.exch1();
                 netwk.exch2();
             }
@@ -126,7 +128,7 @@ function Network() {
 
 
     // ========================================================================
-    // NODE IMPLEMENTATION DETAILS:
+    // IMPLEMENTATION DETAILS:
     // ========================================================================
 
     // we use Raphael's built-in 'eve' event library for message-passing:
@@ -141,18 +143,9 @@ function Network() {
     };
 
 
-    // ========================================================================
-    //  NETWORK IMPLEMENTATION DETAILS:
-    // ========================================================================
-
-    // Add a node to the network, passing a list of the node's neighbors (an
-    // array of integers corresponding to the 'id's of other nodes), returning
-    // the Node object. 
-    // TODO: so, we're passing the neighbors we can _hear_ which doesn't really
-    // work for adding nodes incrementally... hmmm. We might need to actually
-    // store a graph.  OR... we could make installing the listening handlers
-    // happen right before run() ...??
-    netwk.node = function(neighbors){
+    // Finally, nitialize nodes from graph passed to Network() and make
+    // accessible (not a safe interface):
+    netwk.nodes = $.map(adjList, function(neighbors,i){
         var nd = new Node();
         
         // keep the 'D' parameter current. 'n' is updated by Node.
@@ -182,7 +175,7 @@ function Network() {
         });
 
         return nd;
-    }
+    });
 }
 
 
@@ -193,6 +186,7 @@ Network.prototype.exch1 = function(){
     // synchronous, and so we can assume the entire chain of message passing
     // performed above should have completed before the following is executed:
     eve("signal_all.do.exch1_");
+    // likewise below...
 }
 
 Network.prototype.exch2 = function(){
