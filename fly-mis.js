@@ -79,8 +79,8 @@ function Network(adjList) {
             nd.v = 0;
 
             // the broadcast probability is a function of the current phase (i)
-            // and the upper bound of neighbors a node may have in the network:
-            var p = 1 / Math.pow(2 , log2(netwk.maxNeighbors) - netwk.phase);
+            // and the upper bound of neighbors a node may have in the network (D):
+            var p = 1 / Math.pow(2 , log2(netwk.D) - netwk.phase);
 
             // return true and increment 'v' if we're broadcasting:
             if ( Math.random() <= p ){ 
