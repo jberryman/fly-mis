@@ -12,7 +12,7 @@ function log2(n) { return Math.ceil( Math.log(n) / Math.log(2) ) }
 //  ALGORITHM / NETWORK DESCRIPTION
 // ============================================================================
 
-function Network(n,d) { 
+function Network() { 
     var netwk = this;
 
     // The algorithm is parameterized by two properties of the network: the
@@ -112,7 +112,7 @@ function Network(n,d) {
             return false; 
         }
 
-        // if we weren't joining the MIS and received any messages this
+        // else, if we weren't joining the MIS and received any messages this
         // exchange, then exit the algorithm not in the MIS:
         nd.exch2_ = function(){
         //  else ...
@@ -140,45 +140,52 @@ function Network(n,d) {
         eve( nd.id+".exits."+ex_status , nd);
     };
 
+
+    // ========================================================================
+    //  NETWORK IMPLEMENTATION DETAILS:
+    // ========================================================================
+
+    // Add a node to the network, passing a list of the node's neighbors (an
+    // array of integers corresponding to the 'id's of other nodes), returning
+    // the Node object. 
+    // TODO: so, we're passing the neighbors we can _hear_ which doesn't really
+    // work for adding nodes incrementally... hmmm. We might need to actually
+    // store a graph.  OR... we could make installing the listening handlers
+    // happen right before run() ...??
+    netwk.node = function(neighbors){
+        var nd = new Node();
+        
+        // keep the 'D' parameter current. 'n' is updated by Node.
+        netwk.D = Math.max(netwk.D, neighbors.length);
+
+        // a node needs to "hear" each of its neighbors.
+        function hears(){ nd.received = true; }
+
+        $.each(neighbors, function (i,nbr){
+            eve.on( nbr+".broadcasts", hears );
+        });
+        // stop listening to any broadcasts when this node exits (either in MIS
+        // or not):
+        eve.on( nd.id+".exits.*" , function(){ 
+            eve.off("*.broadcasts" , hears) 
+        });
+
+        // we'll also use events to signal that all nodes should perform an
+        // exchange step. Eve is actually just a global queue so nothing is 
+        // done asynchronously, but this would still work of events triggered
+        // were non-deterministic:
+        eve.on( "signal_all.do.*" , function(){
+            // get exchange method name we globbed, and run it directly. (a bit
+            // of a hack, sorry)
+            var exch = eve.nt().split(".").pop();
+            nd[exch]();
+        });
+
+        return nd;
+    }
 }
 
 
-// ============================================================================
-//  NETWORK IMPLEMENTATION DETAILS:
-// ============================================================================
-
-// Add a node to the network, passing a list of the node's neighbors (an
-// array of integers corresponding to the 'id's of other nodes), returning
-// the Node object. 
-Network.prototype.node = function(neighbors){
-    var nd = new Node();
-    
-    // keep the 'D' parameter current. 'n' is updated by Node.
-    netwk.D = Math.max(netwk.D, neighbors.length);
-
-    // a node needs to "hear" each of its neighbors.
-    function hears(){ nd.received = true; }
-
-    $.each(neighbors, function (i,nbr){
-        eve.on( nbr+".broadcasts", hears );
-    });
-    // stop listening to any broadcasts when this node exits (either in MIS or not):
-    eve.on( nd.id+".exits.*" , function(){ 
-        eve.off("*.broadcasts" , hears) 
-    });
-
-    // we'll also be triggering the node exchange steps using events, since the
-    // behavior is (I presume) non-deterministic, and it also seems simpler. So
-    // bind some node behaviors to these "admin" events:
-    eve.on( "signal_all.do.*" , function(){
-        // get exchange methof name we globbed, and run it directly. (a bit of
-        // a hack, sorry)
-        var exch = eve.nt().split(".").pop();
-        nd[exch]();
-    });
-
-    return nd;
-}
 
 Network.prototype.exch1 = function(){
     eve("signal_all.do.exch1");
