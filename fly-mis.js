@@ -19,11 +19,10 @@ function Network(adjList) {
     var netwk = this;
 
     // The algorithm is parameterized by two properties of the network: the
-    // upper bound for nodes in the network (n), and the upper bound on
-    // neighbors a node may have (D). 
-    // (These will be kept up to date as nodes are added during initialization)
-    netwk.D = 0; 
+    // upper bound for nodes in the network (n):
     netwk.n = 0; 
+    // ...and the upper bound on neighbors a node may have (D):
+    netwk.D = 0; 
 
     // The algorithm proceeds in log2(D) phases...
     netwk.phase = 0;  // i
@@ -182,13 +181,19 @@ function Network(adjList) {
 
         return nd;
     });
+
+    // a programmable delay for visualization purposes. in (ms)
+    netwk.delay = 0;
 }
 
 
 // TODO: DO PROGRAMMABLE PAUSES HERE AND ALSO FIRE EVENTS FOR THE VISUALIZATION
 // CODE TO KEEP TRACK OF PHASE / STEP AND EXCH1/2.
+// ALSO, WHAT ABOUT VISUALIZING "HIGH" STATE OF NODE AFTER BROADCAST?
 //
 Network.prototype.exch1 = function(){
+    eve("announce.exch1", this, this.phase, this.step); // for visuals
+
     eve("signal_all.do.exch1");
     // From my tests and understanding of the 'eve' library, these events are
     // synchronous, and so we can assume the entire chain of message passing
@@ -198,6 +203,8 @@ Network.prototype.exch1 = function(){
 }
 
 Network.prototype.exch2 = function(){
+    eve("announce.exch2", this);
+
     eve("signal_all.do.exch2");
     eve("signal_all.do.exch2_");
 
