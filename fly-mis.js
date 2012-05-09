@@ -1,10 +1,14 @@
+// ============================================================================
+//  PRELIMINARIES
+// ============================================================================
+
 // this is the constant that was determined to provide reasonable assurance
 // of a correct Maximal Independent Set:
 var M = 34;
 
 // We use the binary logarithm rounded up for the coin-flip probability function.
-// In the paper whenever is written "log" they mean rounded up, both in the
-// coin-flip probability and round limits.
+// In the paper whenever is written "log" they mean log base 2 rounded up, both
+// in the coin-flip probability and round limits.
 function log2(n) { return Math.ceil( Math.log(n) / Math.log(2) ) }
 
 
@@ -13,39 +17,42 @@ function log2(n) { return Math.ceil( Math.log(n) / Math.log(2) ) }
 // ============================================================================
 
 // initialize a network with an adjacency list describing the neighbor nodes 
-// that each node can "hear". NOTE: paper seems to assume undirected graph,
-// not sure if same properties hold if we pass a directed graph here.
+// that each node can "hear". 
+//    NOTE: paper seems to assume undirected graph, not sure if same
+//     properties hold if we pass a directed graph here; a network of nodes
+//     with varying "broadcast ranges" would be one example of such a network.
 function Network(adjList) { 
     var netwk = this;
-
-    // The algorithm is parameterized by two properties of the network: the
-    // upper bound for nodes in the network (n):
-    netwk.n = 0; 
-    // ...and the upper bound on neighbors a node may have (D):
-    netwk.D = 0; 
-
-    // The algorithm proceeds in log2(D) phases...
-    netwk.phase = 0;  // i
-    // ...each consisting of (M log2(n)) message exchange steps...
-    netwk.step = 0;   // j
-
-    // ...where the probability that a node broadcasts is a function of (i) and
-    // (D), with the probability of a node entering the MIS increasing with
-    // each phase (see Node definition above).
-    netwk.run = function(){
-        for ( null; netwk.phase <= log2(netwk.D); netwk.phase++ ) {
-            for ( null; netwk.step <= (M * log2(netwk.n)); netwk.step++ ) {
-                 netwk.exch1();
-              if(netwk.exch2()) return true;  // algorithm done, return early
-            }
-        }
-        return false; // algorithm failed to terminate
-    }
-
+    
     // The algorithm is almost completely described by the behavior of a Node
     // in the Network. However nodes must act in a synchronous manner; here we
     // represent synchronized variables as properties of the network (rather
-    // than by, say, each individual node's internal clock).
+    // than by, say, each individual node's accurate internal clock).
+    //
+    // These properties include the upper bound for nodes in the network (n),
+    netwk.n = 0; 
+    // ...and the upper bound on neighbors a node may have (D).
+    netwk.D = 0; 
+    
+    // At the level of the network, the algorithm proceeds...
+    netwk.run = function(){
+        // ...in log2(D) phases...
+        forPhase(0 , log2(netwk.D))
+            // ...each consisting of (M log2(n)) message exchange steps (j)
+            .forStep(0 , M * log2(netwk.n),  function(){
+                       netwk.exch1();
+                return netwk.exch2();  
+        });
+        return netwk;
+    }
+
+    // The broadcast probability in each node is a function of the current
+    // phase (i), and (D) so we consider it the third and final property of the
+    // Network:
+    netwk.phase;  // i
+
+
+    // Here we describe the behavior of a single Node in the network:
     function Node() {
         var nd = this;
         nd.id = netwk.n++;  // nodes numbered from 0
@@ -126,6 +133,7 @@ function Network(adjList) {
                 return false;
         };
     };
+    
 
 
     // ========================================================================
@@ -144,8 +152,8 @@ function Network(adjList) {
     };
 
 
-    // Finally, nitialize nodes from graph passed to Network() and make
-    // accessible (not a safe interface):
+    // initialize nodes from graph passed to Network() and make accessible (not
+    // a safe interface):
     netwk.nodes = $.map(adjList, function(neighbors,i){
         var nd = new Node();
         
@@ -175,7 +183,7 @@ function Network(adjList) {
         // to signals, when this node exits (either in MIS or not):
         eve.on( nd.id+".exits.*" , function(){ 
             eve.off("*.broadcasts" , hears) 
-            eve.off("signal_all.do.*" , does); // NOTE: this lets us use eve.listeners() to see how many are active
+            eve.off("signal_all.do.*" , does); 
         });
 
 
@@ -184,11 +192,38 @@ function Network(adjList) {
 
     // a programmable delay for visualization purposes. in (ms)
     netwk.delay = 0;
+
+    // Fake two nested 'for' loops, necessary since we need a delay between
+    // runs of inner loop. This started as an attempt at a generally-useful
+    // framework for loops with delay but I got fed-up:
+    function forPhase(p_i,lim_o){
+        netwk.phase = p_i;
+        return { 
+            forStep: function (s_i,lim_i,f){
+                var lo_inner = s_i;
+                function go(){
+                    if ( f() ) return;
+                    if (lo_inner < lim_i){
+                        lo_inner++;
+                        setTimeout(go, netwk.delay);
+                    } else {
+                        if(netwk.phase < lim_o){
+                            netwk.phase++;
+                            lo_inner = s_i;
+                            go();
+                        } else {
+                            // done
+                        }
+                    }
+                }
+                go();
+            }
+        }
+    }
 }
 
 
-// TODO: DO PROGRAMMABLE PAUSES HERE AND ALSO FIRE EVENTS FOR THE VISUALIZATION
-// CODE TO KEEP TRACK OF PHASE / STEP AND EXCH1/2.
+// TODO: EVENTS TO KEEP TRACK OF PHASE / STEP AND EXCH1/2.
 // ALSO, WHAT ABOUT VISUALIZING "HIGH" STATE OF NODE AFTER BROADCAST?
 //
 Network.prototype.exch1 = function(){
