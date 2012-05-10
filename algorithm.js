@@ -57,10 +57,10 @@ function Network(adjList) {
     function Node() {
         var nd = this;
 
-        // a node has a "receiver" bit that is flipped to a high state (true)
+        // a node needs a "receiver" bit that is flipped to a high state (true)
         // when a message is received and can be reset. This implies our node 
         // cannot count the messages it has received, nor identify the sender:
-        nd.received = false;
+        nd.receiver = false;
 
         // a node needs to keep one bit of state, which is set to 1 everytime
         // it broadcasts, and reset to 0 if a message is received after the
@@ -99,10 +99,7 @@ function Network(adjList) {
 
         // if we received any messages in this exchange, reset state (v) to 0
         nd.exch1_ = function(){
-            if (nd.received) { 
-                nd.v = 0;
-            }
-            nd.received = false; // reset receiver
+            if (nd.received())  nd.v = 0;  // (receiver is reset too)
         }
        
 
@@ -123,7 +120,7 @@ function Network(adjList) {
         // this exchange, then exit the algorithm not in the MIS:
         nd.exch2_ = function(){
         //  else ...
-                if (nd.received) nd.exit("NOT_IN_MIS")
+                if (nd.received())  nd.exit("NOT_IN_MIS");
         };
         
         // IMPLEMENTATION DETAIL:
@@ -147,6 +144,15 @@ function Network(adjList) {
         eve( nd.id+".exits."+ex_status , nd);
     };
 
+    Node.prototype.received = function(){
+        var nd = this;
+        if (nd.receiver){
+            eve(nd.id+".receives"); // for visuals
+            nd.receiver = false; 
+            return true;
+        }
+    };
+
 
     // initialize nodes from graph passed to Network() and make accessible (not
     // a safe interface):
@@ -157,7 +163,7 @@ function Network(adjList) {
         netwk.D = Math.max(netwk.D, neighbors.length);
 
         // a node needs to "hear" each of its neighbors.
-        function hears(){ nd.received = true; }
+        function hears(){ nd.receiver = true; }
 
         $.each(neighbors, function (i,nbr){
             eve.on( nbr+".broadcasts", hears );
