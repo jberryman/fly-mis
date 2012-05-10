@@ -77,8 +77,7 @@ function Network(adjList) {
         //   which (named with an appended underdash) must take place _after_
         //   all messages have been sent. That is nodes must perform four
         //   discrete, synchronized steps.
-
-
+        //
         // The first exchange of each phase has nodes simultaneously
         // broadcasting to their neighbors according to our probability
         // function:
@@ -96,7 +95,6 @@ function Network(adjList) {
                 nd.broadcast();
             }
         }
-
         // if we received any messages in this exchange, reset state (v) to 0
         nd.exch1_ = function(){
             if (nd.received())  nd.v = 0;  // (receiver is reset too)
@@ -106,7 +104,7 @@ function Network(adjList) {
         // --------------------------------------------------------------------
         //  SECOND MESSAGE EXCHANGE 
         // --------------------------------------------------------------------
-
+        //
         // The second exchange is a kind of signaling phase.
         nd.exch2 = function(){
             // If state (v) is still 1, broadcast and exit, joining MIS...
@@ -115,7 +113,6 @@ function Network(adjList) {
                 nd.exit("IN_MIS")
             }
         }
-
         // ...else, if we received any messages from nodes joining the MIS in
         // this exchange, then exit the algorithm not in the MIS:
         nd.exch2_ = function(){
@@ -123,15 +120,15 @@ function Network(adjList) {
                 if (nd.received())  nd.exit("NOT_IN_MIS");
         };
         
-        // IMPLEMENTATION DETAIL:
+        // IMPLEMENTATION DETAIL: assign an ID to this node
         nd.id = netwk.n++;  // nodes numbered from 0
     };
     
 
 
-    // ========================================================================
-    // IMPLEMENTATION DETAILS:
-    // ========================================================================
+// ============================================================================
+// IMPLEMENTATION DETAILS:
+// ============================================================================
 
     // we use Raphael's built-in 'eve' event library for message-passing:
     Node.prototype.broadcast = function(){
@@ -197,7 +194,7 @@ function Network(adjList) {
 
     // Fake two nested 'for' loops, necessary since we need a delay between
     // runs of inner loop. This started as an attempt at a generally-useful
-    // framework for loops with delay but I got fed-up:
+    // framework for loops with delay but I got bogged down:
     function forPhase(p_i,lim_o){
         netwk.phase = p_i;
         return { 
@@ -225,9 +222,6 @@ function Network(adjList) {
 }
 
 
-// TODO: EVENTS TO KEEP TRACK OF PHASE / STEP AND EXCH1/2.
-// ALSO, WHAT ABOUT VISUALIZING "HIGH" STATE OF NODE AFTER BROADCAST?
-//
 Network.prototype.exch1 = function(){
     eve("announce.exch1", this, this.phase, this.step); // for visuals
 
