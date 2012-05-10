@@ -18,9 +18,10 @@ function log2(n) { return Math.ceil( Math.log(n) / Math.log(2) ) }
 
 // initialize a network with an adjacency list describing the neighbor nodes 
 // that each node can "hear". 
-//    NOTE: paper seems to assume undirected graph, not sure if same
-//     properties hold if we pass a directed graph here; a network of nodes
-//     with varying "broadcast ranges" would be one example of such a network.
+//
+// NOTE: paper seems to assume undirected graph, not sure if same
+//   properties hold if we pass a directed graph here; a network of nodes
+//   with varying "broadcast ranges" would be one example of such a network.
 function Network(adjList) { 
     var netwk = this;
     
@@ -31,31 +32,30 @@ function Network(adjList) {
     //
     // These properties include the upper bound for nodes in the network (n),
     netwk.n = 0; 
-    // ...and the upper bound on neighbors a node may have (D).
+    // ...and the upper bound on neighbors a node may have (D). Note, this can
+    // be set to 'n' if unknown
     netwk.D = 0; 
     
-    // At the level of the network, the algorithm proceeds...
+    // At the network level, the algorithm proceeds...
     netwk.run = function(){
-        // ...in log2(D) phases...
+    // ...in log2(D) phases (i)...
         forPhase(0 , log2(netwk.D))
-            // ...each consisting of (M log2(n)) message exchange steps (j)
+    // ...each consisting of M log2(n) simultaneous message exchange steps (j)
             .forStep(0 , M * log2(netwk.n),  function(){
-                       netwk.exch1();
+                       netwk.exch1(); //...described below
                 return netwk.exch2();  
         });
         return netwk;
     }
 
-    // The broadcast probability in each node is a function of the current
-    // phase (i), and (D) so we consider it the third and final property of the
-    // Network:
+    // A node's broadcast probability is a function of the current phase (i),
+    // and (D) so we consider it the third and final property of the Network:
     netwk.phase;  // i
 
 
-    // Here we describe the behavior of a single Node in the network:
+    // Here we describe in detail the behavior of a single Node in the network:
     function Node() {
         var nd = this;
-        nd.id = netwk.n++;  // nodes numbered from 0
 
         // a node has a "receiver" bit that is flipped to a high state (true)
         // when a message is received and can be reset. This implies our node 
@@ -110,28 +110,24 @@ function Network(adjList) {
         //  SECOND MESSAGE EXCHANGE 
         // --------------------------------------------------------------------
 
-        // the second exchange is a kind of signaling phase 
+        // The second exchange is a kind of signaling phase.
         nd.exch2 = function(){
-            // if the state is still 1, then broadcast to neighbors and exit,
-            // joining the MIS:
+            // If state (v) is still 1, broadcast and exit, joining MIS...
             if (nd.v === 1) {
                 nd.broadcast();
                 nd.exit("IN_MIS")
-                return true; // node finished
             }
-            return false; 
         }
 
-        // else, if we weren't joining the MIS and received any messages this
-        // exchange, then exit the algorithm not in the MIS:
+        // ...else, if we received any messages from nodes joining the MIS in
+        // this exchange, then exit the algorithm not in the MIS:
         nd.exch2_ = function(){
         //  else ...
-                if (nd.received) {
-                    nd.exit("NOT_IN_MIS")
-                    return true; // node finished
-                }
-                return false;
+                if (nd.received) nd.exit("NOT_IN_MIS")
         };
+        
+        // IMPLEMENTATION DETAIL:
+        nd.id = netwk.n++;  // nodes numbered from 0
     };
     
 
