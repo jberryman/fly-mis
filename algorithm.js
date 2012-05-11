@@ -144,7 +144,7 @@ function Network(adjList) {
     Node.prototype.received = function(){
         var nd = this;
         if (nd.receiver){
-            eve(nd.id+".receives"); // for visuals
+            eve(nd.id+".received"); // for visuals
             nd.receiver = false; 
             return true;
         }

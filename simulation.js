@@ -27,12 +27,30 @@ var nodeRadius = 10,
 
 // TODO: why aren't namespaces working here??
 
+
 // our nodes and edges:
 Raphael.fn.node = function(xy){
     return this.circle(xy[0] , xy[1] , nodeRadius);
 }
 Raphael.fn.edge = function(xy1,xy2){
     return this.path("M"+xy1[0]+","+xy1[1]+"L"+xy2[0]+","+xy2[1]);
+}
+
+// Node exit visuals:
+Raphael.el.exits = function(inMIS){
+    if (inMIS){
+        this.attr("fill","red");
+    } else{
+        this.attr("fill","gray");
+    }
+}
+
+// Node broadcast visuals:
+Raphael.el.broadcasts = function(){
+    this.attr("fill","yellow");
+}
+Raphael.el.received = function(){
+    this.attr("fill","white");
 }
 
 // do everything that happens in that canvas here:
@@ -85,14 +103,25 @@ Raphael.fn.simulateMIS = function(n){
     // initialize the Network!
     var netwk = new Network(adjList);
 
-    // install Network event handlers that should control visuals within paper:
-    $.each(nodeEls, function(nd_id, nd){
-        eve.on(nd_id+".exits.IN_MIS", function(){
-            nd.attr("fill","red");
-        });
-        eve.on(nd_id+".exits.NOT_IN_MIS", function(){
-            nd.attr("fill","gray");
-        });
+    // visuals for nodes' exits:
+    eve.on("*.exits.*", function(){
+        var m = eve.nt().split("."),
+            nd = nodeEls[ m[0] ];
+        if (m[2] === "IN_MIS"){
+            nd.exits(true);
+        } else{
+            nd.exits(false);
+        }
+    });
+
+    // visuals for broadcasts:
+    eve.on("*.broadcasts", function(){
+        var id = eve.nt().split(".")[0];
+        nodeEls[id].broadcasts();
+    });
+    eve.on("*.received", function(){
+        var id = eve.nt().split(".")[0];
+        nodeEls[id].received();
     });
 
     return netwk;
