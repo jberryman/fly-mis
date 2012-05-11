@@ -41,10 +41,12 @@ function Network(adjList) {
     // ...in log2(D) phases (i)...
         forPhase(0 , log2(netwk.D))
     // ...each consisting of M log2(n) simultaneous message exchange steps (j)
-            .forStep(0 , M * log2(netwk.n),  function(){
-                       netwk.exch1(); //...described below
-                return netwk.exch2();  
-        });
+            .forStep(0 , M * log2(netwk.n))
+                .do(function(){
+                    netwk.exch1(); //...described below
+                 }, function(){
+                    netwk.exch2();  
+                });
         return netwk;
     }
 
@@ -194,28 +196,37 @@ function Network(adjList) {
 
     // Fake two nested 'for' loops, necessary since we need a delay between
     // runs of inner loop. This started as an attempt at a generally-useful
-    // framework for loops with delay but I got bogged down:
+    // framework for loops with delay but I got bogged down, so this is pretty
+    // absurd:
     function forPhase(p_i,lim_o){
         netwk.phase = p_i;
         return { 
-            forStep: function (s_i,lim_i,f){
+            forStep: function (s_i,lim_i){
                 var lo_inner = s_i;
-                function go(){
-                    if ( f() ) return;
-                    if (lo_inner < lim_i){
-                        lo_inner++;
-                        setTimeout(go, netwk.delay);
-                    } else {
-                        if(netwk.phase < lim_o){
-                            netwk.phase++;
-                            lo_inner = s_i;
-                            go();
-                        } else {
-                            // done
+                return {
+                    do: function (f1,f2){
+                        function do1(){
+                            f1();
+                            setTimeout(do2, netwk.delay);
                         }
+                        function do2(){
+                            if ( f2() ) return; //algorithm early success
+                            if (lo_inner < lim_i){
+                                lo_inner++;
+                                setTimeout(do1, netwk.delay);
+                            } else {
+                                if(netwk.phase < lim_o){
+                                    netwk.phase++;
+                                    lo_inner = s_i;
+                                    do1();
+                                } else {
+                                    return; // algorithm done
+                                }
+                            }
+                        }
+                        do1();
                     }
                 }
-                go();
             }
         }
     }
