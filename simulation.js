@@ -29,10 +29,10 @@ var nodeRadius = 10,
 
 // our nodes and edges:
 Raphael.fn.node = function(xy){
-    this.circle(xy[0] , xy[1] , nodeRadius);
+    return this.circle(xy[0] , xy[1] , nodeRadius);
 }
 Raphael.fn.edge = function(xy1,xy2){
-    this.path("M"+xy1[0]+","+xy1[1]+"L"+xy2[0]+","+xy2[1]);
+    return this.path("M"+xy1[0]+","+xy1[1]+"L"+xy2[0]+","+xy2[1]);
 }
 
 // do everything that happens in that canvas here:
@@ -57,34 +57,50 @@ Raphael.fn.simulateMIS = function(n){
         if(overlaps.length === 0) coords.push([x,y]);
     }
 
-    // Build an adjacency list from our coordinates
+    // Build an adjacency list from our coordinates. 
+    // TODO later: improve dumb O(n^2) implementation w/ a kd-tree here
     var adjList = [];
     $.each(coords , function(nd_id, xy){
         var adj = [];
         $.each(coords , function(ndN_id, xyN){ 
-            if(distance(xy,xyN) <= broadcastRange) adj.push(ndN_id);
+            if(nd_id != ndN_id && distance(xy,xyN) <= broadcastRange) adj.push(ndN_id);
         });
         adjList.push(adj);
     });
 
-    // add n nodes to paper, w/ edges between:
+    // add 'n' nodes to paper, w/ edges between:
+    var nodeEls = [], // in index order corresponding to adjList/coords
+        edgeEls = [];
     $.each(adjList, function(nd_id, nbrs){
         var xy = coords[nd_id];
-        p.node(xy);
+        nodeEls.push( p.node(xy) );
         $.each(nbrs, function(i,n_nd_id){
             if (nd_id < n_nd_id){ // only one path between nodes
-                p.edge(xy, coords[n_nd_id]);
+                var xy2 = coords[n_nd_id];
+                edgeEls.push( p.edge(xy, xy2) );
             }
         });
     });
 
-    //return netwk;
+    // initialize the Network!
+    var netwk = new Network(adjList);
+
+    // install Network event handlers that should control visuals within paper:
+    $.each(nodeEls, function(nd_id, nd){
+        eve.on(nd_id+".exits.IN_MIS", function(){
+            nd.attr("fill","red");
+        });
+        eve.on(nd_id+".exits.NOT_IN_MIS", function(){
+            nd.attr("fill","gray");
+        });
+    });
+
+    return netwk;
 };
 
 
 $(function(){
     paper = Raphael("paper", $("#paper").width(), $("#paper").height());
 
-
-// bind all the stuff that happens outside the canvas here:
+    // bind all the stuff that happens outside the canvas here:
 });
