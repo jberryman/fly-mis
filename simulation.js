@@ -20,6 +20,20 @@ function distance(xy1,xy2){
     return Math.sqrt(Math.pow(xy2[0] - xy1[0] ,2) + Math.pow(xy2[1] - xy1[1], 2));
 }
 
+// constants. might want to vary based on paper size:
+var nodeRadius = 10,
+    broadcastRange = 100;
+
+
+// TODO: why aren't namespaces working here??
+
+// our nodes and edges:
+Raphael.fn.node = function(xy){
+    this.circle(xy[0] , xy[1] , nodeRadius);
+}
+Raphael.fn.edge = function(xy1,xy2){
+    this.path("M"+xy1[0]+","+xy1[1]+"L"+xy2[0]+","+xy2[1]);
+}
 
 // do everything that happens in that canvas here:
 Raphael.fn.simulateMIS = function(n){
@@ -27,10 +41,6 @@ Raphael.fn.simulateMIS = function(n){
     var p = this,
         h = p.height,
         w = p.width;
-    
-    // constants:
-    var nodeRadius = 10,
-        broadcastRange = 100;
 
     // get n random coordinates
     var coords = [];
@@ -57,10 +67,15 @@ Raphael.fn.simulateMIS = function(n){
         adjList.push(adj);
     });
 
-    // TEST: add n circles to the paper at coordinates, showing links:
+    // add n nodes to paper, w/ edges between:
     $.each(adjList, function(nd_id, nbrs){
         var xy = coords[nd_id];
-        p.circle(xy[0] , xy[1] , nodeRadius);
+        p.node(xy);
+        $.each(nbrs, function(i,n_nd_id){
+            if (nd_id < n_nd_id){ // only one path between nodes
+                p.edge(xy, coords[n_nd_id]);
+            }
+        });
     });
 
     //return netwk;
