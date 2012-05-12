@@ -210,7 +210,10 @@ function Network(adjList) {
                             setTimeout(do2, netwk.delay);
                         }
                         function do2(){
-                            if ( f2() ) return; //algorithm early success
+                            if ( f2() ) { 
+                                eve("announce.done"); //algorithm early success
+                                return; 
+                            }
                             if (lo_inner < lim_i){
                                 lo_inner++;
                                 setTimeout(do1, netwk.delay);
@@ -220,7 +223,8 @@ function Network(adjList) {
                                     lo_inner = s_i;
                                     do1();
                                 } else {
-                                    return; // algorithm done
+                                    eve("announce.done"); //all loops completed
+                                    return; 
                                 }
                             }
                         }

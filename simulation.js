@@ -6,6 +6,14 @@
 //    turn red and glow when in MIS
 //    broadcast sends out a fuzzy ring that fades as it expands
 // inactive nodes fade to gray
+//
+// TODO:
+// -----
+// Expose for tweaking in UI
+//     - (M) 
+//     - number of nodes (n)
+//     - broadcast range of nodes
+//     - netwk.delay
 
 
 
@@ -18,15 +26,17 @@ var nodeRadius = 10,
     broadcastRange = 100;
 
 
-// TODO: why aren't namespaces working here??
-
-
+// TODO: why aren't namespaces working here?
 // our nodes and edges:
 Raphael.fn.node = function(xy){
     return this.circle(xy[0] , xy[1] , nodeRadius);
 }
-Raphael.fn.edge = function(xy1,xy2){
-    return this.path("M"+xy1[0]+","+xy1[1]+"L"+xy2[0]+","+xy2[1]);
+Raphael.fn.edges = function(edges){
+    var edgeString = "";
+    $.each(edges, function(i,e){
+        edgeString+="M"+e[0][0]+","+e[0][1]+"L"+e[1][0]+","+e[1][1];
+    });
+    return this.path(edgeString);
 }
 
 // Node exit visuals:
@@ -39,6 +49,9 @@ Raphael.el.exits = function(inMIS){
 }
 
 // Node broadcast visuals:
+// TODO: we need 'broadcast' and 'received' events to alter different
+//       properties (i.e. not just fill color) , since they happen
+//       simultaneously
 Raphael.el.broadcasts = function(){
     this.attr("fill","yellow");
 }
@@ -52,7 +65,7 @@ Raphael.fn.simulateMIS = function(n){
     var p = this,
         h = p.height,
         w = p.width;
-
+    
     // get n random coordinates
     var coords = [];
     while(coords.length < n){
@@ -69,7 +82,6 @@ Raphael.fn.simulateMIS = function(n){
     }
 
     // Build an adjacency list from our coordinates. 
-    // TODO later: improve dumb O(n^2) implementation w/ a kd-tree here
     var adjList = [];
     $.each(coords , function(nd_id, xy){
         var adj = [];
@@ -81,17 +93,19 @@ Raphael.fn.simulateMIS = function(n){
 
     // add 'n' nodes to paper, w/ edges between:
     var nodeEls = [], // in index order corresponding to adjList/coords
-        edgeEls = [];
+        edges = [];
     $.each(adjList, function(nd_id, nbrs){
         var xy = coords[nd_id];
         nodeEls.push( p.node(xy) );
         $.each(nbrs, function(i,n_nd_id){
             if (nd_id < n_nd_id){ // only one path between nodes
                 var xy2 = coords[n_nd_id];
-                edgeEls.push( p.edge(xy, xy2) );
+                edges.push( [xy, xy2] );
             }
         });
     });
+    // add adges as a single path element for speed:
+    p.edges(edges);
 
     // initialize the Network!
     var netwk = new Network(adjList);
