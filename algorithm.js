@@ -43,15 +43,19 @@ function Network(adjList) {
     // ...each consisting of M log2(n) simultaneous message exchange steps (j)
             .forStep(0 , M * log2(netwk.n))
                 .do(function(){
-                    netwk.exch1(); //...described below
+                        netwk.exch1(); //...described below
                  }, function(){
-                    netwk.exch2();  
+                 return netwk.exch2();  
                 });
         return netwk;
     }
 
     // A node's broadcast probability is a function of the current phase (i),
-    // and (D) so we consider it the third and final property of the Network:
+    // and (D) ...
+    netwk.broadcastProb = function(){
+        return (1 / Math.pow(2 , log2(netwk.D) - netwk.phase))
+    }
+    // ...so we consider it another property of the network:
     netwk.phase;  // i
 
 
@@ -87,12 +91,8 @@ function Network(adjList) {
             // initialize 'v' to zero:
             nd.v = 0;
 
-            // the broadcast probability is a function of the current phase (i)
-            // and the upper bound of neighbors a node may have in the network (D):
-            var p = 1 / Math.pow(2 , log2(netwk.D) - netwk.phase);
-
             // return true and increment 'v' if we're broadcasting:
-            if ( Math.random() <= p ){ 
+            if ( Math.random() <= netwk.broadcastProb() ){ 
                 nd.v++;
                 nd.broadcast();
             }
@@ -234,7 +234,7 @@ function Network(adjList) {
 
 
 Network.prototype.exch1 = function(){
-    eve("announce.exch1", this, this.phase, this.step); // for visuals
+    eve("announce.exch1", this, this.phase); // for visuals
 
     eve("signal_all.do.exch1");
     // From my tests and understanding of the 'eve' library, these events are

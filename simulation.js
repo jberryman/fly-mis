@@ -1,10 +1,3 @@
-// r = radius of broadcast range
-// rv = radius of node, visually
-//
-// set random paoints on canvas, removing if any overlap, e.g. with rv*2
-// for each node get other nodes within radius r
-// pass this to a new Network()
-
 // VISUALS:
 // --------
 // draw active nodes in blue (maybe)
@@ -126,6 +119,26 @@ Raphael.fn.simulateMIS = function(n){
 
     return netwk;
 };
+
+// keep track of steps, and listen for phases in the exch step events, updating
+// visuals. This could be improved.
+var step,
+    phase;
+eve.on("announce.exch1", function(ph){
+    if (ph !== phase) { // started new phase
+        step = 0; 
+        phase = ph;
+        // adjust visuals for broadcast probability:
+        //console.log("probability changed/set to: "+this.broadcastProb());
+    }
+    // do stuff:
+    //console.log(phase,step);
+});
+eve.on("announce.exch2", function(){
+    // do stuff:
+    //console.log(phase,step);
+    step++;
+});
 
 
 $(function(){
