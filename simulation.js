@@ -25,26 +25,43 @@ function distance(xy1,xy2){
 var nodeRadius = 10,
     broadcastRange = 100;
 
+var activeColor = "white",
+    notInMISColor = "blue",
+    inMISColor = "red";
+
 
 // TODO: why aren't namespaces working here?
 // our nodes and edges:
 Raphael.fn.node = function(xy){
-    return this.circle(xy[0] , xy[1] , nodeRadius);
+    return this.circle(xy[0] , xy[1] , nodeRadius)
+               .attr("fill", activeColor);
 }
 Raphael.fn.edges = function(edges){
     var edgeString = "";
     $.each(edges, function(i,e){
         edgeString+="M"+e[0][0]+","+e[0][1]+"L"+e[1][0]+","+e[1][1];
     });
-    return this.path(edgeString);
+    return this.path(edgeString)
+               .attr({
+                   "stroke": "white",
+                   "stroke-width": 4
+               });
 }
 
 // Node exit visuals:
 Raphael.el.exits = function(inMIS){
     if (inMIS){
-        this.attr("fill","red");
+        this.stop().animate({
+            "fill": inMISColor,
+            "r": nodeRadius * 1.2
+        },  50,
+            function(){
+                this.glow({"color": inMISColor});
+        });
     } else{
-        this.attr("fill","gray");
+        this.stop().animate({
+            "fill": notInMISColor
+        },  50);
     }
 }
 
@@ -52,11 +69,53 @@ Raphael.el.exits = function(inMIS){
 // TODO: we need 'broadcast' and 'received' events to alter different
 //       properties (i.e. not just fill color) , since they happen
 //       simultaneously
-Raphael.el.broadcasts = function(){
-    this.attr("fill","yellow");
+Raphael.el.broadcasts = function(delay){
+
+    var nd = this,
+        attrs = nd.attr(["cx","cy"]),
+        blast = nd.paper.circle(attrs.cx,attrs.cy,broadcastRange)
+                        .attr({
+                            "stroke": "red",
+                            "fill":   "red",
+                            "opacity": 0.5
+                         })
+                        .animate({
+                            "opacity": 0
+                         }, delay,
+                            "linear",
+                            function(){
+                                blast.remove();
+                            }
+                         );
+    // make the broadcasting node give a little "bounce"
+    nd.animate({
+        "r": nodeRadius * 1.2 
+    },  Math.round(delay * 0.25),
+        "ease-out",
+        function(){
+            nd.animate({
+                "r": nodeRadius
+            },  Math.round(delay * 0.75),
+                "bounce"
+            );
+        }
+    );
 }
-Raphael.el.received = function(){
-    this.attr("fill","white");
+
+Raphael.el.received = function(delay){
+    var nd = this;
+    nd.animate({
+        "fill": notInMISColor
+    },  Math.round(delay / 4),
+        "linear",
+        function(){
+            nd.animate({       
+                "fill": activeColor
+            },  Math.round(delay * (3/4)),
+                "linear"
+            );
+        }
+    );
 }
 
 // do everything that happens in that canvas here:
@@ -76,7 +135,7 @@ Raphael.fn.simulateMIS = function(n){
         
         // make sure nothing overlaps, and add some breathing room
         var overlaps = $.grep(coords, function(xy1){
-            return (distance(xy1, [x,y]) < (nodeRadius * 2 + 5));
+            return (distance(xy1, [x,y]) < (nodeRadius * 3));
         });
         if(overlaps.length === 0) coords.push([x,y]);
     }
@@ -105,7 +164,7 @@ Raphael.fn.simulateMIS = function(n){
         });
     });
     // add adges as a single path element for speed:
-    p.edges(edges);
+    p.edges(edges).toBack();
 
     // initialize the Network!
     var netwk = new Network(adjList);
@@ -123,12 +182,12 @@ Raphael.fn.simulateMIS = function(n){
 
     // visuals for broadcasts:
     eve.on("*.broadcasts", function(){
-        var id = eve.nt().split(".")[0];
-        nodeEls[id].broadcasts();
+        var id = eve.nt().split(".")[0];   // TODO: actually 'this' is the node that broadcasted
+        nodeEls[id].broadcasts(netwk.delay);         
     });
     eve.on("*.received", function(){
         var id = eve.nt().split(".")[0];
-        nodeEls[id].received();
+        nodeEls[id].received(netwk.delay);
     });
 
     return netwk;
