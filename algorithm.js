@@ -192,7 +192,7 @@ function Network(adjList) {
     });
 
     // a programmable delay for visualization purposes. in (ms)
-    netwk.delay = 0;
+    netwk.delay = 1000;
 
     // Fake two nested 'for' loops, necessary since we need a delay between
     // runs of inner loop. This started as an attempt at a generally-useful

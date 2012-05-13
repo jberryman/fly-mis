@@ -1,19 +1,9 @@
-// VISUALS:
-// --------
-// draw active nodes in blue (maybe)
-// draw light gray lines connecting nodes in a graph
-// nodes "bounce" red (then fade to lighter red on broadcast), 
-//    turn red and glow when in MIS
-//    broadcast sends out a fuzzy ring that fades as it expands
-// inactive nodes fade to gray
-//
 // TODO:
 // -----
 // Expose for tweaking in UI
 //     - (M) 
 //     - number of nodes (n)
 //     - broadcast range of nodes
-//     - netwk.delay
 
 
 
@@ -26,15 +16,22 @@ var nodeRadius = 10,
     broadcastRange = 100;
 
 var activeColor = "white",
-    notInMISColor = "blue",
-    inMISColor = "red";
+    notInMISColor = "#5555FF",
+    notInMISFlashColor = "#8888FF",
+    inMISColor = "#FF3333";
 
+// ----------------------------------------------------------------------------
+// VISUAL STYLING
+// ----------------------------------------------------------------------------
 
 // TODO: why aren't namespaces working here?
 // our nodes and edges:
 Raphael.fn.node = function(xy){
     return this.circle(xy[0] , xy[1] , nodeRadius)
-               .attr("fill", activeColor);
+               .attr({
+                   "fill": activeColor,
+                   "stroke": "#555555"
+               });
 }
 Raphael.fn.edges = function(edges){
     var edgeString = "";
@@ -55,14 +52,7 @@ Raphael.el.exits = function(inMIS){
             "fill": inMISColor,
             "stroke": inMISColor,
             "r": nodeRadius * 1.5
-        },  200,
-            function(){
-                this.glow({
-                    "color": inMISColor,
-                    "width": Math.ceil(nodeRadius / 2),
-                    "opacity": 0
-                }).animate({"opacity": 0.15}, 1000);
-        });
+        },  200);
     } else{
         this.stop().animate({
             "fill": notInMISColor,
@@ -72,16 +62,13 @@ Raphael.el.exits = function(inMIS){
 }
 
 // Node broadcast visuals:
-// TODO: we need 'broadcast' and 'received' events to alter different
-//       properties (i.e. not just fill color) , since they happen
-//       simultaneously
 Raphael.el.broadcasts = function(delay){
     var nd = this,
         attrs = nd.attr(["cx","cy"]),
         blast = nd.paper.circle(attrs.cx,attrs.cy,broadcastRange)
                         .attr({
-                            "stroke": "red",
-                            "fill":   "red",
+                            "stroke": inMISColor,
+                            "fill":   inMISColor,
                             "opacity": 0.3
                          })
                         .animate({
@@ -110,7 +97,7 @@ Raphael.el.broadcasts = function(delay){
 Raphael.el.received = function(delay){
     var nd = this;
     nd.animate({
-        "fill": notInMISColor
+        "fill": notInMISFlashColor
     },  Math.round(delay / 4),
         "linear",
         function(){
@@ -123,6 +110,10 @@ Raphael.el.received = function(delay){
     );
 }
 
+// ----------------------------------------------------------------------------
+// RUNNING SIMULATION
+// ----------------------------------------------------------------------------
+
 // do everything that happens in that canvas here:
 Raphael.fn.simulateMIS = function(n){
 
@@ -134,9 +125,10 @@ Raphael.fn.simulateMIS = function(n){
     var coords = [];
     while(coords.length < n){
         var x = Math.round(Math.random() * w),
-            y = Math.round(Math.random() * h);
+            y = Math.round(Math.random() * h),
+            nrx2 = nodeRadius * 2;
         // keep nodes away from edges:
-        if (x < nodeRadius || (x+nodeRadius) > w || (y+nodeRadius) > h || y < nodeRadius) continue;
+        if (x < nrx2 || (x+nrx2) > w || (y+nrx2) > h || y < nrx2) continue;
         
         // make sure nothing overlaps, and add some breathing room
         var overlaps = $.grep(coords, function(xy1){
@@ -221,7 +213,7 @@ eve.on("announce.exch2", function(){
 
 $(function(){
     paper = Raphael("paper", $("#paper").width(), $("#paper").height());
-    $("body").append("<button onclick='var n = paper.simulateMIS(100); n.delay = 1000; n.run();'>");
+    $("body").append("<button onclick='var n = paper.simulateMIS(100); setTimeout(function(){n.run()},5000);'>");
 
     // bind all the stuff that happens outside the canvas here:
 });
