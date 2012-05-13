@@ -44,7 +44,7 @@ Raphael.fn.edges = function(edges){
     return this.path(edgeString)
                .attr({
                    "stroke": "white",
-                   "stroke-width": 4
+                   "stroke-width": 2
                });
 }
 
@@ -53,15 +53,21 @@ Raphael.el.exits = function(inMIS){
     if (inMIS){
         this.stop().animate({
             "fill": inMISColor,
-            "r": nodeRadius * 1.2
-        },  50,
+            "stroke": inMISColor,
+            "r": nodeRadius * 1.5
+        },  200,
             function(){
-                this.glow({"color": inMISColor});
+                this.glow({
+                    "color": inMISColor,
+                    "width": Math.ceil(nodeRadius / 2),
+                    "opacity": 0
+                }).animate({"opacity": 0.15}, 1000);
         });
     } else{
         this.stop().animate({
-            "fill": notInMISColor
-        },  50);
+            "fill": notInMISColor,
+            "stroke": notInMISColor
+        },  200);
     }
 }
 
@@ -70,14 +76,13 @@ Raphael.el.exits = function(inMIS){
 //       properties (i.e. not just fill color) , since they happen
 //       simultaneously
 Raphael.el.broadcasts = function(delay){
-
     var nd = this,
         attrs = nd.attr(["cx","cy"]),
         blast = nd.paper.circle(attrs.cx,attrs.cy,broadcastRange)
                         .attr({
                             "stroke": "red",
                             "fill":   "red",
-                            "opacity": 0.5
+                            "opacity": 0.3
                          })
                         .animate({
                             "opacity": 0
@@ -89,13 +94,13 @@ Raphael.el.broadcasts = function(delay){
                          );
     // make the broadcasting node give a little "bounce"
     nd.animate({
-        "r": nodeRadius * 1.2 
-    },  Math.round(delay * 0.25),
-        "ease-out",
+        "r": nodeRadius * 1.5 
+    },  Math.round(delay * 0.20),
+        "ease-in",
         function(){
             nd.animate({
                 "r": nodeRadius
-            },  Math.round(delay * 0.75),
+            },  Math.round(delay * 0.70),
                 "bounce"
             );
         }
@@ -216,6 +221,7 @@ eve.on("announce.exch2", function(){
 
 $(function(){
     paper = Raphael("paper", $("#paper").width(), $("#paper").height());
+    $("body").append("<button onclick='var n = paper.simulateMIS(100); n.delay = 1000; n.run();'>");
 
     // bind all the stuff that happens outside the canvas here:
 });
