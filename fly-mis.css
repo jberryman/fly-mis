@@ -22,6 +22,7 @@ input {
 #about {
     width: 500px;
     margin: 25px auto;
+    margin-top: 70px;
 }
 
 #status, #controls {
