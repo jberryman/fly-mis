@@ -2,16 +2,14 @@
 // -----
 // Expose for tweaking in UI
 //     - (M) 
-//     - number of nodes (n)
-//     - broadcast range of nodes
-
+//     - delay 
 
 
 function distance(xy1,xy2){
     return Math.sqrt(Math.pow(xy2[0] - xy1[0] ,2) + Math.pow(xy2[1] - xy1[1], 2));
 }
 
-//TODO chang ethis to a defaults object
+//TODO change this to a 'defaults' object
 // defaults. might want to vary based on paper size:
 var nodeRadius = 10,
     broadcastRange = 100,
@@ -26,7 +24,7 @@ var activeColor = "white",
 // VISUAL STYLING
 // ----------------------------------------------------------------------------
 
-// TODO: why aren't namespaces working here?
+// TODO: an "MIS" namespace would be nice for these, but seems broken in Raphael
 // our nodes and edges:
 Raphael.fn.node = function(xy){
     return this.circle(xy[0] , xy[1] , nodeRadius)
@@ -181,12 +179,10 @@ Raphael.fn.simulateMIS = function(n){
 
     // visuals for broadcasts:
     eve.on("*.broadcasts", function(){
-        var id = eve.nt().split(".")[0];   // TODO: actually 'this' is the node that broadcasted
-        nodeEls[id].broadcasts(netwk.delay);         
+        nodeEls[this.id].broadcasts(netwk.delay);         
     });
     eve.on("*.received", function(){
-        var id = eve.nt().split(".")[0];
-        nodeEls[id].received(netwk.delay);
+        nodeEls[this.id].received(netwk.delay);
     });
 
     return netwk;

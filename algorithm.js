@@ -33,7 +33,7 @@ function Network(adjList) {
     // These properties include the upper bound for nodes in the network (n),
     netwk.n = 0; 
     // ...and the upper bound on neighbors a node may have (D). Note, this can
-    // be set to 'n' if unknown
+    // be set to 'n' if unknown:
     netwk.D = 0; 
     
     // At the network level, the algorithm proceeds...
@@ -43,7 +43,7 @@ function Network(adjList) {
     // ...each consisting of M log2(n) simultaneous message exchange steps (j)
             .forStep(0 , M * log2(netwk.n))
                 .do(function(){
-                        netwk.exch1(); //...described below
+                        netwk.exch1(); 
                  }, function(){
                  return netwk.exch2();  
                 });
@@ -55,7 +55,7 @@ function Network(adjList) {
     netwk.broadcastProb = function(){
         return (1 / Math.pow(2 , log2(netwk.D) - netwk.phase))
     }
-    // ...so we consider it another property of the network:
+    // ...so we consider the current "phase" another property of the network:
     netwk.phase;  // i
 
 
@@ -63,12 +63,13 @@ function Network(adjList) {
     function Node() {
         var nd = this;
 
-        // a node needs a "receiver" bit that is flipped to a high state (true)
-        // when a message is received and can be reset. This implies our node 
-        // cannot count the messages it has received, nor identify the sender:
+        // In our implementation, a node needs a "receiver" bit that is flipped
+        // to a high state (true) when a message is received and can be reset.
+        // This implies our node cannot count the messages it has received, nor
+        // identify the sender:
         nd.receiver = false;
 
-        // a node needs to keep one bit of state, which is set to 1 everytime
+        // a node needs to keep one bit of state, which is set to 1 each time
         // it broadcasts, and reset to 0 if a message is received after the
         // first exchange round. 
         nd.v; 
@@ -88,10 +89,10 @@ function Network(adjList) {
         // broadcasting to their neighbors according to our probability
         // function:
         nd.exch1 = function(){
-            // initialize 'v' to zero:
+            // reset 'v' to zero:
             nd.v = 0;
 
-            // return true and increment 'v' if we're broadcasting:
+            // increment 'v' if we're broadcasting:
             if ( Math.random() <= netwk.broadcastProb() ){ 
                 nd.v++;
                 nd.broadcast();
@@ -107,7 +108,8 @@ function Network(adjList) {
         //  SECOND MESSAGE EXCHANGE 
         // --------------------------------------------------------------------
         //
-        // The second exchange is a kind of signaling phase.
+        // The second exchange allows nodes to announce to their neighbors that
+        // they've joined the MIS.
         nd.exch2 = function(){
             // If state (v) is still 1, broadcast and exit, joining MIS...
             if (nd.v === 1) {
@@ -146,7 +148,7 @@ function Network(adjList) {
     Node.prototype.received = function(){
         var nd = this;
         if (nd.receiver){
-            eve(nd.id+".received"); // for visuals
+            eve(nd.id+".received", nd); // for visuals
             nd.receiver = false; 
             return true;
         }

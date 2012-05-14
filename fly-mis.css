@@ -4,10 +4,11 @@ body {
     font-family: 'lucida sans unicode', 'lucida grande', sans-serif;
     font-size: 16px;
     line-height: 1.5;
+    text-shadow: 0px 1px 3px #DDD;
 }
 body strong {
     color: #222;
-    text-shadow: 1px 1px 2px #DDD;
+    text-shadow: 0px 1px 2px #DDD;
 }
 textarea {
     border: 1px solid #888;
@@ -18,7 +19,6 @@ textarea {
 #about {
     width: 500px;
     margin: 25px auto;
-    text-shadow: 1px 1px 3px #DDD;
 }
 
 #status, #controls {
