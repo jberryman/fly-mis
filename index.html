@@ -19,8 +19,36 @@
 </head>
 
 <body id="home">
+    <div id="about">
+        <p>
+        A simulation of the algorithm from <em>"A Biological Solution to a
+        Fundamental Distributed Computing Problem"</em> by Afek, Alon, Barad,
+        Hornstein, Barkai, and Bar-Joseph. Primitive nodes, following a
+        simple probabalistic procedure elect a  
+          <a href="http://en.wikipedia.org/wiki/Maximal_independent_set">maximal independent set</a> ,
+        with very high probability. The algorithm is inspired by processes
+        in a developing fly's nervous system!
+        </p>
+        <p>
+        In this visualization red nodes are members of the MIS, while blue
+        nodes are not (this is backwards from illustrations in the paper I've
+        just realized). When nodes turn red or blue they have become inactive.
+        </p>
+        <p>
+        After broadcasting in <strong>exchange 1</strong>, if a node has
+        <em>received no broadcasts from neighbors</em>, 
+        then in <strong>exchange 2</strong> the node joins the MIS and
+        broadcasts to its neighbors, signalling they should exit the algorithm.
+        </p>
+        <p>
+        Here is my 
+        <a href="http://brandon.si/code/a-simulation-of-a-biological-mis-algorithm/">blog post</a> 
+        introducing this project in more detail.
+        </p>
+    </div>
 
     <div id="paper"></div>
+
     <div id="controls">
         <button name="generate">Generate</button>
         <span>a random graph of</span>
@@ -28,6 +56,7 @@
         <span>with a broadcast range of</span>
         <textarea rows="1" cols="3" name="range"></textarea><span>px</span>
     </div>
+
     <div id="status" style="display: none;">
         <p>Running <strong>exchange <span name="exchange">1</span></strong>, 
             <br>

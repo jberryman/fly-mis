@@ -3,19 +3,29 @@ body {
 
     font-family: 'lucida sans unicode', 'lucida grande', sans-serif;
     font-size: 16px;
-    word-spacing: 2.2pt;
     line-height: 1.5;
-    text-align: center;
 }
 body strong {
     color: #222;
     text-shadow: 1px 1px 2px #DDD;
+}
+textarea {
+    border: 1px solid #888;
+    resize: none;
+    overflow: auto;
+    vertical-align: middle;
+}
+#about {
+    width: 500px;
+    margin: 25px auto;
+    text-shadow: 1px 1px 3px #DDD;
 }
 
 #status, #controls {
     width: 400px;
     height: 400px;
     margin: 25px auto;
+    text-align: center;
 }
 
 #paper {
