@@ -21,6 +21,23 @@
 <body id="home">
 
     <div id="paper"></div>
+    <div id="controls">
+        <button name="generate">Generate</button>
+        <span>a random graph of</span>
+        <textarea rows="1" cols="3" name="nodes"></textarea><span>nodes</span>
+        <span>with a broadcast range of</span>
+        <textarea rows="1" cols="3" name="range"></textarea><span>px</span>
+    </div>
+    <div id="status" style="display: none;">
+        <p>Running <strong>exchange <span name="exchange">1</span></strong>, 
+            <br>
+            in <strong>step <span name="step">0</span> of <span name="total-steps"></span></strong>, 
+            <br>
+            in <strong>phase <span name="phase">0</span> of <span name="total-phases"></span></strong>, 
+            <br>
+            with <strong>broadcast probability <span name="broadcast-probability"></span>%</strong>.
+        </p>
+    </div>
 
 </body>
 </html>

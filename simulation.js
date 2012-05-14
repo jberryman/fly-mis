@@ -11,9 +11,11 @@ function distance(xy1,xy2){
     return Math.sqrt(Math.pow(xy2[0] - xy1[0] ,2) + Math.pow(xy2[1] - xy1[1], 2));
 }
 
-// constants. might want to vary based on paper size:
+//TODO chang ethis to a defaults object
+// defaults. might want to vary based on paper size:
 var nodeRadius = 10,
-    broadcastRange = 100;
+    broadcastRange = 100,
+    numberNodes = 100;
 
 var activeColor = "white",
     notInMISColor = "#5555FF",
@@ -192,28 +194,63 @@ Raphael.fn.simulateMIS = function(n){
 
 // keep track of steps, and listen for phases in the exch step events, updating
 // visuals. This could be improved.
-var step,
-    phase;
+var runStatus = {
+    step: null,
+    phase: null
+}
+// Keep status line updated as we run:
 eve.on("announce.exch1", function(ph){
-    if (ph !== phase) { // started new phase
-        step = 0; 
-        phase = ph;
+    if (ph !== runStatus.phase) { // started new phase
+        runStatus.step = 0; 
+        runStatus.phase = ph;
+        
         // adjust visuals for broadcast probability:
-        //console.log("probability changed/set to: "+this.broadcastProb());
+        var p = this.broadcastProb() * 100;
+        $("#status span[name=broadcast-probability]").html(p); 
     }
-    // do stuff:
-    //console.log(phase,step);
+    if (runStatus.phase === 0 && runStatus.step === 0){
+        // our for-loop limits from algorithm.js:
+        var D = this.D,
+            n = this.n;
+        $("#status span[name=total-steps]").html(M * log2(n));
+        $("#status span[name=total-phases]").html(log2(D));
+    }
+    $("#status span[name=exchange]").html(1);
+    $("#status span[name=step]").html(runStatus.step);
+    $("#status span[name=phase]").html(runStatus.phase);
 });
 eve.on("announce.exch2", function(){
-    // do stuff:
-    //console.log(phase,step);
-    step++;
+    $("#status span[name=exchange]").html(2);
+    runStatus.step++;
+});
+eve.on("announce.done", function(){
+    $("#status p").html("<strong>Done!</strong>");
 });
 
 
 $(function(){
-    paper = Raphael("paper", $("#paper").width(), $("#paper").height());
-    $("body").append("<button onclick='var n = paper.simulateMIS(100); setTimeout(function(){n.run()},5000);'>");
+    $("#controls textarea[name=range]").val(broadcastRange);
+    $("#controls textarea[name=nodes]").val(numberNodes);
 
-    // bind all the stuff that happens outside the canvas here:
+    var paper = Raphael("paper", $("#paper").width(), $("#paper").height());
+
+    var netwk,
+        runButton = $('<button name="run">Run simulation!</button>')
+                    .click(function(){
+                        netwk.run();
+                        $("#controls").remove();
+                        $("#status").show();
+                    });
+
+    $("#controls button[name=generate]").click(function(){
+        broadcastRange = $("#controls textarea[name=range]").val();
+        netwk = paper.simulateMIS($("#controls textarea[name=nodes]").val());
+
+        $("#controls").html(runButton)
+    });
+
+    $("#controls button[name=run]").click(function(){
+        netwk.run();
+    });
+
 });
