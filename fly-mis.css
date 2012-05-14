@@ -10,8 +10,11 @@ body strong {
     color: #222;
     text-shadow: 0px 1px 2px #DDD;
 }
-textarea {
+input {
     border: 1px solid #888;
+    height: 18px;
+    width: 70px;
+    margin-right: 5px;
     resize: none;
     overflow: auto;
     vertical-align: middle;
@@ -32,7 +35,7 @@ textarea {
     width: 500px;
     height: 500px;
     margin: 25px auto;
-    background: #EEEEEE;
+    background: #DDD;
 
 
   /* copy-pasted from the wonderful http://css3please.com/ */

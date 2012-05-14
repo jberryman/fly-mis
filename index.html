@@ -24,21 +24,27 @@
         A simulation of the algorithm from <em>"A Biological Solution to a
         Fundamental Distributed Computing Problem"</em> by Afek, Alon, Barad,
         Hornstein, Barkai, and Bar-Joseph. Primitive nodes, following a
-        simple probabalistic procedure elect a  
-          <a href="http://en.wikipedia.org/wiki/Maximal_independent_set">maximal independent set</a> ,
-        with very high probability. The algorithm is inspired by processes
-        in a developing fly's nervous system!
-        </p>
-        <p>
-        In this visualization red nodes are members of the MIS, while blue
-        nodes are not (this is backwards from illustrations in the paper I've
-        just realized). When nodes turn red or blue they have become inactive.
+        simple probabilistic broadcast/receive procedure, elect a  
+          <a href="http://en.wikipedia.org/wiki/Maximal_independent_set">maximal independent set</a>
+        with very high probability. This new algorithm is inspired by processes
+        in the developing nervous system of a fly!
         </p>
         <p>
         After broadcasting in <strong>exchange 1</strong>, if a node has
         <em>received no broadcasts from neighbors</em>, 
         then in <strong>exchange 2</strong> the node joins the MIS and
         broadcasts to its neighbors, signalling they should exit the algorithm.
+        </p>
+        <p>
+        In any given exchange step, the probability a node may broadcast to its
+        neighbors is a function of the current phase and the upper bound on the
+        number of neighbors a node in the network may have. It increases over
+        time.
+        </p>
+        <p>
+        In this visualization red nodes are members of the MIS, while blue
+        nodes are not (this is backwards from illustrations in the paper I've
+        just realized). When nodes turn red or blue they have become inactive.
         </p>
         <p>
         Here is my 
@@ -52,9 +58,9 @@
     <div id="controls">
         <button name="generate">Generate</button>
         <span>a random graph of</span>
-        <textarea rows="1" cols="3" name="nodes"></textarea><span>nodes</span>
+        <input type="number" min="2" max="160" step="1" name="nodes"></input><span>nodes</span>
         <span>with a broadcast range of</span>
-        <textarea rows="1" cols="3" name="range"></textarea><span>px</span>
+        <input type="number" min="40" max="400" step="10" name="range"></input><span>px</span>
     </div>
 
     <div id="status" style="display: none;">

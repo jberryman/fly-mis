@@ -225,8 +225,8 @@ eve.on("announce.done", function(){
 
 
 $(function(){
-    $("#controls textarea[name=range]").val(broadcastRange);
-    $("#controls textarea[name=nodes]").val(numberNodes);
+    $("#controls input[name=range]").val(broadcastRange);
+    $("#controls input[name=nodes]").val(numberNodes);
 
     var paper = Raphael("paper", $("#paper").width(), $("#paper").height());
 
@@ -239,8 +239,8 @@ $(function(){
                     });
 
     $("#controls button[name=generate]").click(function(){
-        broadcastRange = $("#controls textarea[name=range]").val();
-        netwk = paper.simulateMIS($("#controls textarea[name=nodes]").val());
+        broadcastRange = $("#controls input[name=range]").val();
+        netwk = paper.simulateMIS($("#controls input[name=nodes]").val());
 
         $("#controls").html(runButton)
     });
