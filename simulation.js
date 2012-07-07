@@ -224,7 +224,7 @@ eve.on("announce.done", function(){
 });
 
 
-$(function(){
+$(window).load(function(){
     $("#controls input[name=range]").val(broadcastRange);
     $("#controls input[name=nodes]").val(numberNodes);
 
