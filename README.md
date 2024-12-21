@@ -5,7 +5,7 @@ from "A Biological Solution to a Fundamental Distributed Computing Problem" by
 Afek et al. (sorry I don't have a link to the PDF, and respect you too much to
 link you to a paywall).
 
-You can [play with it](http://jberryman.github.com/fly-mis/)
+You can [play with it](https://jberryman.github.io/fly-mis/)
 or [check out the code](https://github.com/jberryman/fly-mis) on GitHub; 
 in particular, see 
 ["algorithm.js"](https://github.com/jberryman/fly-mis/blob/master/algorithm.js)
